@@ -48,7 +48,9 @@
                 <div class="hero-cta">
                     <a href="#contact" class="btn btn-primary">Contact Me</a>
                     <a href="#experience" class="btn btn-secondary">View Experience</a>
-                    <a href="#" class="btn btn-accent" download><i class="fas fa-file-download"></i> Download CV</a>
+                    <a href="cv.pdf" id="download-cv-btn" class="btn btn-accent" download="Hichem_Benchaia_CV.pdf"><i class="fas fa-file-download"></i> Download CV</a>
+                    <input type="file" id="cv-upload-input" accept="application/pdf" style="display: none;">
+                    <button id="upload-cv-btn" class="btn btn-secondary admin-only" style="display: none;">Upload CV</button>
                 </div>
             </div>
         </section>
@@ -321,6 +323,7 @@
     <!-- Firebase SDK (v8 compat for simpler script usage) -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
     <!-- DOMPurify for XSS protection -->

@@ -14,6 +14,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const auth = firebase.auth();
+const storage = firebase.storage();
 
 
     console.log('Portfolio loaded');
@@ -132,6 +133,56 @@ const auth = firebase.auth();
         });
     }
 
+    // CV Upload Logic
+    const uploadCvBtn = document.getElementById('upload-cv-btn');
+    const cvUploadInput = document.getElementById('cv-upload-input');
+    const downloadCvBtn = document.getElementById('download-cv-btn');
+
+    if (uploadCvBtn && cvUploadInput) {
+        uploadCvBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            cvUploadInput.click();
+        });
+
+        cvUploadInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            if (file.type !== 'application/pdf') {
+                alert('Please upload a PDF file.');
+                return;
+            }
+
+            const originalText = uploadCvBtn.innerText;
+            uploadCvBtn.innerText = 'Uploading...';
+            uploadCvBtn.disabled = true;
+
+            const storageRef = storage.ref('cv/cv.pdf');
+            storageRef.put(file).then((snapshot) => {
+                return snapshot.ref.getDownloadURL();
+            }).then((downloadURL) => {
+                console.log('File available at', downloadURL);
+                downloadCvBtn.href = downloadURL;
+                uploadCvBtn.innerText = 'Upload CV';
+                uploadCvBtn.disabled = false;
+
+                // Save to Firestore
+                db.collection('portfolio').doc('data').set({
+                    cvUrl: downloadURL
+                }, { merge: true }).then(() => {
+                    alert('CV uploaded and saved successfully!');
+                }).catch((error) => {
+                    console.error('Error saving CV URL to Firestore:', error);
+                });
+            }).catch((error) => {
+                console.error('Upload failed:', error);
+                uploadCvBtn.innerText = originalText;
+                uploadCvBtn.disabled = false;
+                alert('Upload failed. Check console.');
+            });
+        });
+    }
+
     // Theme Toggle
     const themeToggle = document.querySelector('.theme-toggle');
     if (themeToggle) {
@@ -213,6 +264,7 @@ const auth = firebase.auth();
         saveChangesBtn.style.display = 'block';
         addExperienceBtn.style.display = 'block';
         addProjectBtn.style.display = 'block';
+        if (uploadCvBtn) uploadCvBtn.style.display = 'inline-block';
 
         // Make text editable
         const editableElements = document.querySelectorAll('.editable');
@@ -258,6 +310,7 @@ const auth = firebase.auth();
         saveChangesBtn.style.display = 'none';
         addExperienceBtn.style.display = 'none';
         addProjectBtn.style.display = 'none';
+        if (uploadCvBtn) uploadCvBtn.style.display = 'none';
 
         // Disable editing
         document.querySelectorAll('.editable, .editable-list').forEach(el => {
@@ -352,7 +405,7 @@ const auth = firebase.auth();
         data['experience-html'] = document.getElementById('experience-list').innerHTML;
         data['projects-html'] = document.getElementById('projects-list').innerHTML;
 
-        db.collection('portfolio').doc('data').set(data)
+        db.collection('portfolio').doc('data').set(data, { merge: true })
             .then(() => {
                 alert('Changes saved successfully to Firebase! Exiting Admin Mode.');
             })
@@ -366,6 +419,14 @@ const auth = firebase.auth();
         db.collection('portfolio').doc('data').get().then((doc) => {
             if (doc.exists) {
                 const data = doc.data();
+
+                // Load CV URL if exists
+                if (data.cvUrl) {
+                    const downloadBtn = document.getElementById('download-cv-btn');
+                    if (downloadBtn) {
+                        downloadBtn.href = data.cvUrl;
+                    }
+                }
 
                 // Restore HTML structure first (for added blocks and order)
                 // Use DOMPurify to prevent XSS
