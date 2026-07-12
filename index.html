@@ -172,8 +172,13 @@
                 <div class="projects-grid" id="projects-list">
                     <!-- Project Card 1 -->
                     <article class="project-card editable-block">
-                        <div class="project-image">
+                        <div class="project-image" style="position: relative;">
                             <div class="placeholder-img"></div>
+                            <img src="" alt="Project Image" class="editable-img-preview" data-key="proj1-img" style="display: none; width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0;">
+                            <div class="edit-img-overlay admin-only" style="display: none; position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.7); padding: 5px; border-radius: 4px; z-index: 10;">
+                                <input type="text" class="img-url-input" placeholder="Image URL..." style="display: none; width: 150px; font-size: 12px; padding: 2px;">
+                                <button class="btn-edit-img" style="background: none; border: none; color: white; cursor: pointer;"><i class="fas fa-image"></i> Edit</button>
+                            </div>
                         </div>
                         <div class="project-info">
                             <h3 class="project-title editable" data-key="proj1-title">Project Name</h3>
@@ -262,6 +267,7 @@
         <div class="modal-content">
             <span class="close-modal">&times;</span>
             <h2>Admin Login</h2>
+            <input type="email" id="admin-email" placeholder="Enter Email">
             <input type="password" id="admin-password" placeholder="Enter Password">
             <button id="login-submit" class="btn btn-primary">Login</button>
             <p id="login-error" style="color: red; display: none;">Incorrect password</p>
@@ -272,6 +278,14 @@
     <button id="save-changes-btn" class="btn btn-primary admin-only"
         style="display: none; position: fixed; bottom: 20px; right: 20px; z-index: 1001;">Save
         Changes</button>
+
+    <!-- Firebase SDK (v8 compat for simpler script usage) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+    <!-- DOMPurify for XSS protection -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.9/purify.min.js"></script>
 
     <script src="script.js"></script>
 </body>
