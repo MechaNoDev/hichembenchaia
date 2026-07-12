@@ -1,7 +1,14 @@
 {
-  "name": "portfolio",
-  "compatibility_date": "2024-05-12",
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "hichembenchaiaprofile",
+  "compatibility_date": "2026-07-12",
+  "observability": {
+    "enabled": true
+  },
   "assets": {
-    "directory": "./"
-  }
+    "directory": "."
+  },
+  "compatibility_flags": [
+    "nodejs_compat"
+  ]
 }
