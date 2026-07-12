@@ -295,6 +295,36 @@ ul {
     transform: translateY(-2px);
 }
 
+.btn-accent {
+    background: transparent;
+    border: 2px solid var(--accent-color);
+    color: var(--accent-color);
+    box-shadow: var(--global-box-shadow, 0 0 10px rgba(244, 114, 182, 0.2));
+}
+
+.btn-accent:hover {
+    background: var(--accent-color);
+    color: #fff;
+    box-shadow: var(--global-box-shadow, 0 0 30px rgba(244, 114, 182, 0.6));
+    transform: translateY(-2px);
+}
+
+.btn i {
+    margin-right: 0.5rem;
+}
+
+/* Scroll Animations */
+.fade-in {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+
+.fade-in.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
 /* Sections */
 .section {
     padding: 6rem 0;
@@ -354,6 +384,42 @@ ul {
     background: rgba(0, 243, 255, 0.1);
     box-shadow: var(--global-box-shadow, 0 0 15px rgba(0, 243, 255, 0.4));
     transform: translateY(-2px);
+}
+
+/* Skill Bars */
+.skills-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.skill-bar .skill-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--text-color);
+    text-shadow: var(--global-text-shadow, 0 0 5px rgba(255,255,255,0.2));
+}
+
+.skill-bar .progress-line {
+    position: relative;
+    height: 10px;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid rgba(0, 243, 255, 0.1);
+}
+
+.skill-bar .progress-line span {
+    position: absolute;
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    border-radius: 10px;
+    width: 0;
+    transition: width 1.5s ease-out;
+    box-shadow: var(--global-box-shadow, 0 0 10px var(--primary-color));
 }
 
 /* Experience Timeline */
@@ -569,12 +635,55 @@ ul {
     text-align: left;
 }
 
+.contact-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: start;
+}
+
 .contact-info {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
     align-items: flex-start;
     font-size: 1.2rem;
+}
+
+.contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.contact-form .form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.contact-form input,
+.contact-form textarea {
+    width: 100%;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(0, 243, 255, 0.3);
+    color: var(--text-color);
+    border-radius: 8px;
+    outline: none;
+    transition: var(--transition);
+    font-family: var(--font-main);
+    font-size: 1rem;
+}
+
+.contact-form input:focus,
+.contact-form textarea:focus {
+    border-color: var(--primary-color);
+    box-shadow: var(--global-box-shadow, 0 0 15px rgba(0, 243, 255, 0.3));
+    background: rgba(0, 243, 255, 0.05);
+}
+
+.contact-form button {
+    align-self: flex-start;
 }
 
 .contact-item {
@@ -856,6 +965,11 @@ body.light-mode .skill-tag:hover {
     border-color: #94a3b8;
 }
 
+body.light-mode .skill-bar .progress-line {
+    background: #e2e8f0;
+    border-color: #cbd5e1;
+}
+
 body.light-mode .project-card,
 body.light-mode .edu-card {
     background: #ffffff;
@@ -905,6 +1019,17 @@ body.light-mode .btn-secondary:hover {
     border-color: #94a3b8;
 }
 
+body.light-mode .btn-accent {
+    border-color: #f472b6;
+    color: #db2777;
+}
+
+body.light-mode .btn-accent:hover {
+    background: #fbcfe8;
+    color: #9d174d;
+    border-color: #f472b6;
+}
+
 body.light-mode .footer {
     background: #f8fafc;
     border-top: 1px solid #e2e8f0;
@@ -924,6 +1049,19 @@ body.light-mode .modal input {
 }
 
 body.light-mode .modal input:focus {
+    border-color: var(--primary-color);
+    background: #ffffff;
+}
+
+body.light-mode .contact-form input,
+body.light-mode .contact-form textarea {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    color: #0f172a;
+}
+
+body.light-mode .contact-form input:focus,
+body.light-mode .contact-form textarea:focus {
     border-color: var(--primary-color);
     background: #ffffff;
 }
