@@ -18,6 +18,75 @@ const auth = firebase.auth();
 
     console.log('Portfolio loaded');
 
+    // Animate skill bars
+    const progressLines = document.querySelectorAll('.progress-line span');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if(entry.isIntersecting) {
+                const width = entry.target.getAttribute('data-width');
+                entry.target.style.width = width;
+            }
+        });
+    }, { threshold: 0.5 });
+
+    progressLines.forEach(line => observer.observe(line));
+
+
+
+
+
+    // Scroll Fade-in Animations
+    const fadeElements = document.querySelectorAll('.fade-in');
+    const fadeObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if(entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, { threshold: 0.1 });
+
+    fadeElements.forEach(el => fadeObserver.observe(el));
+
+    // Contact Form Logic
+    const contactForm = document.getElementById('contact-form');
+    if (contactForm) {
+        contactForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const submitBtn = document.getElementById('contact-submit');
+            const statusMsg = document.getElementById('contact-status');
+
+            const name = document.getElementById('contact-name').value;
+            const email = document.getElementById('contact-user-email').value;
+            const message = document.getElementById('contact-message').value;
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = 'Sending...';
+
+            db.collection('messages').add({
+                name: name,
+                email: email,
+                message: message,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => {
+                statusMsg.style.display = 'block';
+                statusMsg.style.color = '#10b981'; // Green
+                statusMsg.innerText = 'Message sent successfully!';
+                contactForm.reset();
+            }).catch((error) => {
+                console.error("Error writing document: ", error);
+                statusMsg.style.display = 'block';
+                statusMsg.style.color = '#ef4444'; // Red
+                statusMsg.innerText = 'Error sending message. Please try again.';
+            }).finally(() => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Send Message';
+                setTimeout(() => {
+                    statusMsg.style.display = 'none';
+                }, 5000);
+            });
+        });
+    }
+
     // Smooth scrolling
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
