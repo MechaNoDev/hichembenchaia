@@ -1,4 +1,21 @@
 document.addEventListener('DOMContentLoaded', () => {
+// Firebase Configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyBDhgqrrKEETyY3IULUDDa4t1iFY3mGV1o",
+  authDomain: "myprofilehb.firebaseapp.com",
+  projectId: "myprofilehb",
+  storageBucket: "myprofilehb.firebasestorage.app",
+  messagingSenderId: "986837010107",
+  appId: "1:986837010107:web:1956ba06d1f188515b4b9e",
+  measurementId: "G-8G7LV6JESK"
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const auth = firebase.auth();
+
+
     console.log('Portfolio loaded');
 
     // Smooth scrolling
@@ -96,29 +113,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Login Logic
     // Login Logic
-    loginSubmit.addEventListener('click', async () => {
+    loginSubmit.addEventListener('click', () => {
         const password = adminPasswordInput.value;
-        const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(password));
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        const email = document.getElementById("admin-email").value;
 
-        // SHA-256 hash for "admin123"
-        const correctHash = "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9";
-
-        if (hashHex === correctHash) {
-            enableAdminMode();
-            loginModal.style.display = 'none';
-            adminPasswordInput.value = '';
-            loginError.style.display = 'none';
-        } else {
-            loginError.style.display = 'block';
-        }
+        auth.signInWithEmailAndPassword(email, password)
+            .then((userCredential) => {
+                // Signed in
+                enableAdminMode();
+                loginModal.style.display = 'none';
+                adminPasswordInput.value = '';
+                loginError.style.display = 'none';
+            })
+            .catch((error) => {
+                const errorCode = error.code;
+                const errorMessage = error.message;
+                loginError.innerText = "Login failed. Please check your password.";
+                loginError.style.display = 'block';
+            });
     });
 
     function enableAdminMode() {
         document.body.classList.add('admin-mode');
 
         // Show Admin Controls
+
+        document.querySelectorAll('.edit-img-overlay').forEach(el => {
+            el.style.display = 'block';
+        });
         saveChangesBtn.style.display = 'block';
         addExperienceBtn.style.display = 'block';
         addProjectBtn.style.display = 'block';
@@ -160,6 +182,10 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.classList.remove('admin-mode');
 
         // Hide Admin Controls
+
+        document.querySelectorAll('.edit-img-overlay').forEach(el => {
+            el.style.display = 'none';
+        });
         saveChangesBtn.style.display = 'none';
         addExperienceBtn.style.display = 'none';
         addProjectBtn.style.display = 'none';
@@ -257,20 +283,28 @@ document.addEventListener('DOMContentLoaded', () => {
         data['experience-html'] = document.getElementById('experience-list').innerHTML;
         data['projects-html'] = document.getElementById('projects-list').innerHTML;
 
-        localStorage.setItem('portfolioData', JSON.stringify(data));
-        alert('Changes saved! Exiting Admin Mode.');
+        db.collection('portfolio').doc('data').set(data)
+            .then(() => {
+                alert('Changes saved successfully to Firebase! Exiting Admin Mode.');
+            })
+            .catch((error) => {
+                console.error("Error writing document: ", error);
+                alert("Error saving changes. Check console.");
+            });
     });
 
     function loadContent() {
-        const data = JSON.parse(localStorage.getItem('portfolioData'));
-        if (!data) return;
+        db.collection('portfolio').doc('data').get().then((doc) => {
+            if (doc.exists) {
+                const data = doc.data();
 
-        // Restore HTML structure first (for added blocks and order)
-        if (data['experience-html']) {
-            document.getElementById('experience-list').innerHTML = data['experience-html'];
-        }
+                // Restore HTML structure first (for added blocks and order)
+                // Use DOMPurify to prevent XSS
+                if (data['experience-html']) {
+                    document.getElementById('experience-list').innerHTML = DOMPurify.sanitize(data['experience-html'], {ADD_ATTR: ['onclick']});
+                }
         if (data['projects-html']) {
-            document.getElementById('projects-list').innerHTML = data['projects-html'];
+            document.getElementById('projects-list').innerHTML = DOMPurify.sanitize(data['projects-html'], {ADD_ATTR: ['onclick']});
         }
 
         // Clean up any accidental contenteditable attributes from loaded HTML
@@ -287,8 +321,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.querySelectorAll('.editable-list').forEach(el => {
             if (el.dataset.key && data[el.dataset.key]) {
-                el.innerHTML = data[el.dataset.key];
+                el.innerHTML = DOMPurify.sanitize(data[el.dataset.key]);
             }
+        });
+            } else {
+                console.log("No saved data found in Firebase.");
+            }
+        }).catch((error) => {
+            console.log("Error getting document:", error);
         });
     }
 
@@ -327,8 +367,13 @@ document.addEventListener('DOMContentLoaded', () => {
         newBlock.setAttribute('draggable', 'true'); // Make new block draggable immediately
         newBlock.innerHTML = `
             <button class="delete-btn" onclick="this.parentElement.remove()">&times;</button>
-            <div class="project-image">
+            <div class="project-image" style="position: relative;">
                 <div class="placeholder-img"></div>
+                <img src="" alt="Project Image" class="editable-img-preview" data-key="proj-${id}-img" style="display: none; width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0;">
+                <div class="edit-img-overlay admin-only" style="display: block; position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.7); padding: 5px; border-radius: 4px; z-index: 10;">
+                    <input type="text" class="img-url-input" placeholder="Image URL..." style="display: none; width: 150px; font-size: 12px; padding: 2px;">
+                    <button class="btn-edit-img" style="background: none; border: none; color: white; cursor: pointer;"><i class="fas fa-image"></i> Edit</button>
+                </div>
             </div>
             <div class="project-info">
                 <h3 class="project-title editable" contenteditable="true" data-key="proj-${id}-title">New Project</h3>
@@ -343,5 +388,40 @@ document.addEventListener('DOMContentLoaded', () => {
         // Add drag listeners to new block
         newBlock.addEventListener('dragstart', handleDragStart);
         newBlock.addEventListener('dragend', handleDragEnd);
+    });
+
+    // Global event listener for image editing in Admin Mode
+    document.addEventListener('click', (e) => {
+        if (!document.body.classList.contains('admin-mode')) return;
+
+        if (e.target.closest('.btn-edit-img')) {
+            e.preventDefault();
+            const btn = e.target.closest('.btn-edit-img');
+            const overlay = btn.closest('.edit-img-overlay');
+            const input = overlay.querySelector('.img-url-input');
+            const imgPreview = overlay.parentElement.querySelector('.editable-img-preview');
+            const placeholder = overlay.parentElement.querySelector('.placeholder-img');
+
+            if (input.style.display === 'none') {
+                input.style.display = 'block';
+                btn.innerHTML = '<i class="fas fa-check"></i> Save';
+            } else {
+                const url = input.value;
+                if (url) {
+                    imgPreview.src = url;
+                    imgPreview.style.display = 'block';
+                    if(placeholder) placeholder.style.display = 'none';
+                    // Set src inline style or attr to save to innerHTML
+                    imgPreview.setAttribute('src', url);
+                } else {
+                    imgPreview.src = '';
+                    imgPreview.style.display = 'none';
+                    imgPreview.removeAttribute('src');
+                    if(placeholder) placeholder.style.display = 'block';
+                }
+                input.style.display = 'none';
+                btn.innerHTML = '<i class="fas fa-image"></i> Edit';
+            }
+        }
     });
 });
